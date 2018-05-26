@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const config = require('./modules/config');
-const func = require('./modules/functions');
+const funcModule = require('./modules/functions');
 const models = require('./modules/models')
 
 
@@ -20,14 +20,9 @@ var db = mongoose.connection;
 	db.once('open', function() {	
 	
 	//
-
-
 });
 
-
-
-//App Start 
-
+//App Start
 //Homepage
 app.get('/', (req, res)=>{	
 	res.render('index');
@@ -36,31 +31,38 @@ app.get('/', (req, res)=>{
 
 app.get('/new/*', (req, res) =>{
  	let longUrl = req.params[0];
- 	
-	func.genNewSite(longUrl, respond);
+	 
+	let regex = /https:\/\//gm;
+	if (regex.test(longUrl)){
+	
 
-	function respond (ans){
-		let obj = {}
-		obj.longUrl = ans.name;
-		obj.shortUrl= ans._id; 
-		
-		res.send(obj);
-		}
+		funcModule.genNewSite(longUrl, respond);
+		function respond (ans){
+			res.send(ans);
+			};
+
+	} else {
+		res.send("Format must be prefixed with 'https'")
+		};
 	});
 
 
 app.get('/:_id', (req, res)=>{
+	let shortUrl = req.params._id;
+	
+	models.findSite(shortUrl, response)
 
-	res.send(req.params._id);
+	function response (site){
+		if(site===null){
+			res.send("No site in DB");
+		} else {
 
-
-	 //res.writeHead(301, {Location: longURL });
-	//res.end();
+		res.statusCode = 301;
+		res.setHeader("Location", site.name);
+		res.end();
+	}
+};
 })
-
-
-
-
 
 //Server
 app.listen(3000, ()=>{

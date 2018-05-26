@@ -36,6 +36,17 @@ linkSchema.pre('save', (next)=>{
 });		 
 
 
+exports.findSite = function (site, cb){
+
+	exports.link.findOne({'_id' : site}, (err, website)=>{
+		if (err) return console.log(err);
+		
+		cb(website);
+
+	});
+
+}
+
 
 
 
